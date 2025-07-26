@@ -14,6 +14,9 @@ BINARY_NAME := app
 build:
 	go build -o $(BINARY_NAME) $(MAIN_PATH)
 
+test:
+	go test -v -race ./...
+
 docker-build:
 	docker-compose build
 

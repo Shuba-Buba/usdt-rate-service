@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type OrderBookEntry struct {
@@ -26,14 +28,16 @@ type DepthResponse struct {
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
+	logger     *zap.Logger
 }
 
-func NewClient(baseURL string) *Client {
+func NewClient(baseURL string, logger *zap.Logger) *Client {
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
+		logger: logger,
 	}
 }
 
@@ -49,7 +53,11 @@ func (c *Client) GetDepth(ctx context.Context) (*DepthResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			c.logger.Fatal("Failed to close connection", zap.Error(err))
+		}
+	}()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {

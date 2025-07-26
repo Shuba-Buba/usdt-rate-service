@@ -28,7 +28,11 @@ func main() {
 		fmt.Printf("Failed to create logger: %v\n", err)
 		os.Exit(1)
 	}
-	defer log.Sync()
+	defer func() {
+		if err := log.Sync(); err != nil {
+			log.Fatal("Failed to sync logger", zap.Error(err))
+		}
+	}()
 
 	log.Info("Starting USDT rate service",
 		zap.String("grpc_port", cfg.GRPCPort),
@@ -40,13 +44,17 @@ func main() {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatal("Failed to close connection", zap.Error(err))
+		}
+	}()
 
 	log.Info("Connected to database", zap.String("url", cfg.PostgresURL))
 
 	rateRepo := repository.NewRateRepository(db)
 
-	grinexClient := grinex.NewClient(cfg.GrinexURL)
+	grinexClient := grinex.NewClient(cfg.GrinexURL, log)
 
 	rateService := service.NewRateService(rateRepo, grinexClient, log)
 
