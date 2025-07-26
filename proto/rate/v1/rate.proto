@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package rate.v1;
+
+option go_package = "github.com/your-username/usdt-rate-service/proto/rate/v1";
+
+service RateService {
+  rpc GetRates(GetRatesRequest) returns (GetRatesResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message GetRatesRequest {}
+
+message OrderBookEntry {
+  string price = 1;
+  string volume = 2;
+  string amount = 3;
+  string factor = 4;
+  string type = 5;
+}
+
+message GetRatesResponse {
+  int64 timestamp = 1;
+  repeated OrderBookEntry asks = 2;
+  repeated OrderBookEntry bids = 3;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+}

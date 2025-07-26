@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "50051:50051"
+    environment:
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/rates?sslmode=disable
+      - GRPC_PORT=50051
+      - GRINEX_URL=https://grinex.io
+      - LOG_LEVEL=info
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=rates
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
