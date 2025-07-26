@@ -16,13 +16,17 @@ type RateRepository interface {
 	Ping(ctx context.Context) error
 }
 
+type GrinexClient interface {
+	GetDepth(ctx context.Context) (*grinex.DepthResponse, error)
+}
+
 type RateService struct {
 	repo   RateRepository
-	client *grinex.Client
+	client GrinexClient
 	logger *zap.Logger
 }
 
-func NewRateService(repo RateRepository, client *grinex.Client, logger *zap.Logger) *RateService {
+func NewRateService(repo RateRepository, client GrinexClient, logger *zap.Logger) *RateService {
 	return &RateService{
 		repo:   repo,
 		client: client,
